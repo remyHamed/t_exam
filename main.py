@@ -44,11 +44,18 @@ Created on Mon Apr 2024
 @author: Remy Hamed
 """
 
+import logging
 import random
 from threading import Lock, Thread
 
 import sys
 sys.set_int_max_str_digits(5000000)
+
+
+logging.basicConfig(
+    filename=r'game.log',
+    format   = "%(asctime)-15s;%(thread)d;%(levelname)s;%(filename)s;%(lineno)d;%(message)s",
+    level    = logging.DEBUG )
 
 
 class Queue:
@@ -79,7 +86,8 @@ class referee(Thread):
 	
 	def init_game(self):
 		n = random.randint(10000, 100000)
-		print(f"Starting number: {n}")
+		print(f"Starting number: {n}", flush=True)
+		logging.info(f"Starting number: {n}")
 		number_bundle = "j1" + ' ' + str(n)
 		self.queue.push(number_bundle)
 	
@@ -110,6 +118,7 @@ class Player(Thread):
 
 	def play(self):
 			print(f"{self.name} is playing")
+			logging.info(f"{self.name} is playing")
 			number_bundle = self.queue.pop()
 
 			if number_bundle is None:
@@ -129,12 +138,12 @@ class Player(Thread):
 				return
 			
 			if number % 2 == 0:
-				number = number / 2
+				number = number//2
 				self.queue.push(f"{self.name} {number}")
 				return
 			
 			if number % 2 == 1:
-				number = 3 * number + 1 / 2
+				number =( 3 * number + 1 )//2
 				self.queue.push(f"{self.name} {number}")
 				return
 
@@ -156,6 +165,7 @@ r.start()
 r.join()
 
 print("Game over")
+logging.info("Game over")
 
 
 
