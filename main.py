@@ -67,25 +67,6 @@ class Queue:
         with self.__lock:
             return len(self.__queue)
 
-class Player(Thread):
-	def __init__(self, name, queue):
-		Thread.__init__(self)
-		self.name = name
-		self.queue = queue
-    
-	def run(self):
-		while True:
-			n = self.queue.pop()
-			if n is None:
-				break
-			if n == 1:
-				print(f"{self.name} wins")
-				break
-			if n % 2 == 0:
-				self.queue.push(n // 2)
-			else:
-				self.queue.push((3 * n + 1) // 2)
-
 
 class referee(Thread):
 	def __init__(self, queue):
@@ -111,10 +92,10 @@ class referee(Thread):
 				print(f"{player} wins")
 				self._continue = False
 			else:
-				Queue.push(number_bundle)
+				self.queue.push(number_bundle)
 
 
-class player(Thread):
+class Player(Thread):
 	def __init__(self, name, queue):
 		Thread.__init__(self)
 		self.name = name
@@ -134,9 +115,13 @@ class player(Thread):
 			if number == 1:
 				self.queue.push(number_bundle)
 			if number % 2 == 0:
-				self.queue.push(f"j1 {number // 2}")
+
+				number = number // 2
+
+				self.queue.push(f"j1 {number}")
 			if number % 2 == 1:
-				self.queue.push(f"j1 {3 * number + 1 // 2}")
+				number = 3 * number + 1 // 2
+				self.queue.push(f"j1 {number}")
 
 	
 	def run(self):
@@ -154,6 +139,8 @@ r.start()
 [ p.start() for p in players]
 [ p.join() for p in players]
 r.join()
+
+print("Game over")
 
 
 
