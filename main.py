@@ -47,6 +47,9 @@ Created on Mon Apr 2024
 import random
 from threading import Lock, Thread
 
+import sys
+sys.set_int_max_str_digits(5000000)
+
 
 class Queue:
     def __init__(self):
@@ -83,11 +86,14 @@ class referee(Thread):
 	def run(self):
 		while self._continue:
 			number_bundle = self.queue.pop()
+
 			if number_bundle is None:
 				break
+
 			parts = number_bundle.split()
 			player = parts[0]
 			number = int(parts[1])
+			print(f"{player} {number}")
 			if number == 1:
 				print(f"{player} wins")
 				self._continue = False
@@ -103,25 +109,34 @@ class Player(Thread):
 		self._continue = True
 
 	def play(self):
+			print(f"{self.name} is playing")
 			number_bundle = self.queue.pop()
+
 			if number_bundle is None:
 				return
+			
 			parts = number_bundle.split()
 			player = parts[0]
 			number = int(parts[1])
+
 			if player == self.name:
 				self.queue.push(number_bundle)
 				return
+			
 			if number == 1:
 				self.queue.push(number_bundle)
+				self._continue = False
+				return
+			
 			if number % 2 == 0:
-
-				number = number // 2
-
-				self.queue.push(f"j1 {number}")
+				number = number / 2
+				self.queue.push(f"{self.name} {number}")
+				return
+			
 			if number % 2 == 1:
-				number = 3 * number + 1 // 2
-				self.queue.push(f"j1 {number}")
+				number = 3 * number + 1 / 2
+				self.queue.push(f"{self.name} {number}")
+				return
 
 	
 	def run(self):
