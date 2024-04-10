@@ -43,3 +43,120 @@ Created on Mon Apr 2024
 
 @author: Remy Hamed
 """
+
+import random
+from threading import Lock, Thread
+
+
+class Queue:
+    def __init__(self):
+        self.__queue = []
+        self.__lock = Lock()
+
+    def push( self, data ):
+        with self.__lock:
+            self.__queue.append( data )
+
+    def pop( self ):
+        with self.__lock:
+            if len(self.__queue) == 0:
+                return None
+            return self.__queue.pop( 0 )
+
+    def __len__(self):
+        with self.__lock:
+            return len(self.__queue)
+
+class Player(Thread):
+	def __init__(self, name, queue):
+		Thread.__init__(self)
+		self.name = name
+		self.queue = queue
+    
+	def run(self):
+		while True:
+			n = self.queue.pop()
+			if n is None:
+				break
+			if n == 1:
+				print(f"{self.name} wins")
+				break
+			if n % 2 == 0:
+				self.queue.push(n // 2)
+			else:
+				self.queue.push((3 * n + 1) // 2)
+
+
+class referee(Thread):
+	def __init__(self, queue):
+		Thread.__init__(self)
+		self.queue = queue
+		self._continue = True
+	
+	def init_game(self):
+		n = random.randint(10000, 100000)
+		print(f"Starting number: {n}")
+		number_bundle = "j1" + ' ' + str(n)
+		self.queue.push(number_bundle)
+	
+	def run(self):
+		while self._continue:
+			number_bundle = self.queue.pop()
+			if number_bundle is None:
+				break
+			parts = number_bundle.split()
+			player = parts[0]
+			number = int(parts[1])
+			if number == 1:
+				print(f"{player} wins")
+				self._continue = False
+			else:
+				Queue.push(number_bundle)
+
+
+class player(Thread):
+	def __init__(self, name, queue):
+		Thread.__init__(self)
+		self.name = name
+		self.queue = queue
+		self._continue = True
+
+	def play(self):
+			number_bundle = self.queue.pop()
+			if number_bundle is None:
+				return
+			parts = number_bundle.split()
+			player = parts[0]
+			number = int(parts[1])
+			if player == self.name:
+				self.queue.push(number_bundle)
+				return
+			if number == 1:
+				self.queue.push(number_bundle)
+			if number % 2 == 0:
+				self.queue.push(f"j1 {number // 2}")
+			if number % 2 == 1:
+				self.queue.push(f"j1 {3 * number + 1 // 2}")
+
+	
+	def run(self):
+		while self._continue:
+			self.play()
+
+q = Queue()
+
+r= referee(q)
+r.init_game()
+
+players = [ Player("j1", q),Player("j2", q)]
+
+r.start()
+[ p.start() for p in players]
+[ p.join() for p in players]
+r.join()
+
+
+
+
+
+# Path: exam_false/main.p
